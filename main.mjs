@@ -16,3 +16,5 @@ import math from './math-esm.mjs';  //math is object
 const {add,sub}=math;  //add and sub should match the function
 console.log(add(10,2));
 console.log(sub(10,2));
+
+console.clear();

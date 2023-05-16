@@ -67,3 +67,79 @@ console.log(sub(5,2));
 //Object reference or why to use module.exports instead of only exports
 console.clear();
 require('./obect_reference');
+
+
+const data=require("./data.json");
+console.log(data);
+console.log(data.name);
+console.log(data['name']);
+
+
+//Built in modules  1.path
+const path=require("node:path");  //node: optional
+console.log(__filename);
+console.log(__dirname);
+
+console.log(path.basename(__filename));   //last portion i.e index.js and last foldername
+console.log(path.basename(__dirname));   
+
+console.log(path.extname(__filename));   //extension .js and empty for folder
+console.log(path.extname(__dirname));   
+
+console.log(path.parse(__filename));   //dif properties like base,extension etc.
+console.log(path.format(path.parse(__filename)));   
+
+console.log(path.isAbsolute(__filename));  //is absolute path or not
+
+console.log(path.join("folder1","folder2","index.html")); //from begining
+console.log(path.join("/folder1","folder2","index.html"));
+console.log(path.join("/folder1","//folder2","index.html"));
+console.log(path.join("/folder1","//folder2","../index.html"));
+console.log(path.join(__dirname,"data.json"));
+
+console.log(path.resolve("folder1","folder2","index.html")); //absolute path from last folder of pwd
+console.log(path.resolve("/folder1","folder2","index.html"));
+console.log(path.resolve("/folder1","//folder2","index.html"));
+console.log(path.resolve("/folder1","//folder2","../index.html"));
+console.log(path.resolve(__dirname,"data.json"));
+
+
+//2.Callbacks- function passed as argument to another function 
+//function are first class objects
+//function can be passed as an argument to function
+//function can be returned as values from other function
+function greet(name){
+    console.log("Hello "+name);
+}
+function greetsam(greetfn){  //greenfn-->callback function , greetsam-->higher order function
+    const name="sam";
+    greetfn(name);
+}
+
+greetsam(greet);
+//types--> synchronous:executed immediately above example 
+//asynchronous: executed after particular time or event has occured
+
+// Eg:function callback(){
+//     document.getElementById("first").innerHTML="Hello";
+// }
+// document.getElementById("btn").addEventListener("click",callback);
+
+
+console.clear();
+const EventEmitter=require("node:events");
+const emitter=new EventEmitter();
+emitter.on("order-pizza",()=>{console.log("Order received! Baking pizza")}); //on event occured whtat to perform
+emitter.emit("order-pizza"); //Event occured
+
+emitter.on("order-pizza1",(size,flavour)=>{console.log(`Order received! Baking ${size} pizza with ${flavour}`)}); //use ` to print parameter
+// emitter.emit("order-pizza1","large","mushroom");
+
+emitter.on("order-pizza1",(size)=>{
+    if(size==="large"){
+        console.log("Serving complement drink");
+    }
+});
+
+console.log("Do work before");
+emitter.emit("order-pizza1","large","mushroom");
