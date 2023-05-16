@@ -39,3 +39,31 @@ console.log(superman2.getName());
 superman2.setName("Bruce payne");
 console.log(superman2.getName());
 
+
+//function has (exports,require,module,__filename,__dirname)
+
+//Different import and export patterns
+//1. refer add1.js
+
+//2. directly
+const sum=require('./add2');
+console.log(sum(5,8));
+
+//3.more than one export or function in single module -> refer math.js
+const math=require('./math');
+console.log(math.add(5,2));
+console.log(math.sub(5,2));
+//or structuring
+//const math=require('./math');
+const {add,sub}=math;
+console.log(add(5,2));
+console.log(sub(5,2));
+
+//4. 3rd one directly refer math.js 4th one
+
+//5. only with exports.add in 4th instead module.exports.add
+
+
+//Object reference or why to use module.exports instead of only exports
+console.clear();
+require('./obect_reference');
