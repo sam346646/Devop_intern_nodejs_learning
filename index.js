@@ -631,6 +631,27 @@ process.nextTick(()=>console.log("nexttick1"));
 const uppercase=require("upper-case").upperCase; 
 console.log(uppercase("Sam"));
 
+//see package.json see the package required
+//we can use npm install to install all packages in the dependencies at one go
+//npm install -g nodemon -->to install global package like nodemon automatic refresh
+
+//to get the particuar version package 
+//use npm install upper-case@2.0.0
+//normallu updated version is imported
+
+//version control
+//x.y.z   x-major(backward incomaptible),y-minor(new functionality and backward compatible),z-patch(bug fixes)
+
+
+//To publish a package
+//1.login to npm
+//2.npm adduser <username> -provide emaila and password
+//npm publish
+
+
+
+
+
 
 
 
