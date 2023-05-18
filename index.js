@@ -351,53 +351,285 @@ readablestream2.pipe(gzip).pipe(fs4.WriteStream("./temp.txt.gz"))
 
 
 //http routing  -->  if we type localhost:3000/about index page only loaded to make it different do the following
+
+// const http=require("node:http");
+// const fs5=require("node:fs");
+
+// const server=http.createServer((req,res)=>{
+//     // res.end(req.url); //   / will be url
+//     // req.method to handle GET,POST,PUT
+
+//     if(req.url==="/"){
+//         res.writeHead(200,{"Content-Type":"text/plain"});
+//         res.end("index page");
+//     }
+//     else if(req.url==="/about"){
+//         res.writeHead(200,{"Content-Type":"text/plain"});
+//         res.end("about page");
+//     }
+//     else if(req.url==="/api"){
+//         res.writeHead(200,{"Content-Type":"application/json"});
+//         res.end(JSON.stringify({
+//             "firstname":"sam",
+//             "lastname":"manasseh"
+//         }));
+//     }
+//     else{
+//         res.writeHead(404);
+//         res.end("Page not found");
+//     }
+// });
+
+// server.listen(3000,()=>{
+//     console.log("Listening to 3000");
+// });
+
+
+//libuv- open source library written in c, to handle asynchronous non blocking operation
+//libuv is a thread pool to avoid blocking in main thread
+//asynchronous behaviour
+//To demonstarte async behaviour of node js using certain method like pbkdf2Sync vs pbkdf2 and readFileSync vs readFile
+
+const fs6=require('node:fs');
+console.log("First");
+fs.readFile("./temp.txt","utf-8",(error,data)=>{
+        console.log("File contents");
+    });
+console.log("Last")
+//crypto module
 console.clear();
-const http=require("node:http");
-const fs5=require("node:fs");
+const crypto=require('node:crypto');
+const start=Date.now();
+crypto.pbkdf2Sync("password","salt",100000,512,"sha512");
+console.log("Hash: ",Date.now()-start);
+//Time taken will increase if we replicate above code many times 1-200,2-400,3-600
+//but pbkdf2 is asynchronous takes less time since they run parallel 1-200,2-220,3-245
 
-const server=http.createServer((req,res)=>{
-    // res.end(req.url); //   / will be url
-    // req.method to handle GET,POST,PUT
+const max_calls=5;
+const start1=Date.now();
+for(let i=0;i<max_calls;i++){
+    crypto.pbkdf2("password","salt",100000,512,"sha512",()=>{
+        console.log("Hash",i+1,": ",Date.now()-start);
+    });
+    
+}
+//2 hash will take almost same time since thread pool
+//if we change max_calls=5 5th hash take more time meaning there are 4 threads in libuv, 4 run parallely and 5th after 4.
 
-    if(req.url==="/"){
-        res.writeHead(200,{"Content-Type":"text/plain"});
-        res.end("index page");
-    }
-    else if(req.url==="/about"){
-        res.writeHead(200,{"Content-Type":"text/plain"});
-        res.end("about page");
-    }
-    else if(req.url==="/api"){
-        res.writeHead(200,{"Content-Type":"application/json"});
-        res.end(JSON.stringify({
-            "firstname":"sam",
-            "lastname":"manasseh"
-        }));
-    }
-    else{
-        res.writeHead(404);
-        res.end("Page not found");
-    }
+//To change the number of threads
+//process.env.UV_THREADPOOL_SIZE=5;
+
+//Can increase till how much cpu core the pc has mac=8 core ,if more it will share equal time for each process say 2 are given to one core
+
+//below code is executed at almost same time for each loop since https.request is n/w i/o bound and it is not cpu bound so it doesn't use threadpool
+// const max_calls2=2;
+// const start2=Date.now();
+// const https=require("node:https");
+// for(let i=0;i<max_calls2;i++){
+//     https.request("https://www.google.com",(res)=>{
+//         res.on("data",()=>{});
+//         res.on("end",()=>{
+//             console.log("Request",i+1,": ",Date.now()-start2);
+//         });
+//     });
+// }
+
+
+
+// Event loop:cordinate the execution in six queues
+// Priority:
+// 1)microtask:nexttick and promises queue
+// 2)timer queue:setinterval,timeout
+// 3)i/o queue: fs and http
+// 4)check queue: set immediate
+// 5)close queue: close handlers
+
+
+// ex1:
+
+// console.log("Console 1");
+// process.nextTick(()=>console.log("nexttick1"));
+// console.log("Console 2");
+//above 3 sync has higher priority than async (c1,c2,n1 is displayed)
+
+// ex2:
+
+// Promise.resolve().then(()=>console.log("promise 1"));
+// process.nextTick(()=>console.log("nexttick1"));
+// //above 2 nexttick has higher priority than promise (n1,p1 is displayed)
+
+
+// ex3:
+
+// process.nextTick(()=>console.log("nexttick1"));
+// process.nextTick(()=>{
+//     console.log("this is inside1");
+//     process.nextTick(()=>console.log("nexttick2"));
+// });
+// process.nextTick(()=>console.log("nexttick3"));
+// Promise.resolve().then(()=>console.log("promise 1"));
+// Promise.resolve().then(()=>{
+//     console.log("this is inside2");
+//     Promise.resolve().then(()=>console.log("promise 2"));
+// });
+// Promise.resolve().then(()=>console.log("promise 3"));
+// above 14 n1,i1,n3,n2 p1,i2,p3,p2
+
+
+// ex4:
+
+// setTimeout(()=>console.log("this is settimeout1"),0);
+// setTimeout(()=>console.log("this is settimeout2"),0);
+// setTimeout(()=>console.log("this is settimeout3"),0);
+
+// process.nextTick(()=>console.log("nexttick1"));
+// process.nextTick(()=>{
+//     console.log("this is inside1");
+//     process.nextTick(()=>console.log("nexttick2"));
+// });
+// process.nextTick(()=>console.log("nexttick3"));
+// Promise.resolve().then(()=>console.log("promise 1"));
+// Promise.resolve().then(()=>{
+//     console.log("this is inside2");
+//     process.nextTick(()=>console.log("nexttick4"));
+// });
+// Promise.resolve().then(()=>console.log("promise 3"));
+// above 14 n1,i1,n3,n2 p1,i2,p3,n4,s1,s2,s3(since s123 has prority after n,p)
+
+
+// //ex5:
+
+// setTimeout(()=>console.log("this is settimeout1"),0);
+// setTimeout(()=>{
+//     console.log("this is settimeout2");
+//     process.nextTick(()=>console.log("nexttick5"));
+// },0);
+// setTimeout(()=>console.log("this is settimeout3"),0);
+
+// process.nextTick(()=>console.log("nexttick1"));
+// process.nextTick(()=>{
+//     console.log("this is inside1");
+//     process.nextTick(()=>console.log("nexttick2"));
+// });
+// process.nextTick(()=>console.log("nexttick3"));
+// Promise.resolve().then(()=>console.log("promise 1"));
+// Promise.resolve().then(()=>{
+//     console.log("this is inside2");
+//     process.nextTick(()=>console.log("nexttick4"));
+// });
+// Promise.resolve().then(()=>console.log("promise 3"));
+// //above 14 n1,i1,n3,n2 p1,i2,p3,n4,s1,s2,n5,s3(since s123 has prority after n,p)
+
+// //ex6:
+
+// setTimeout(()=>console.log("this is settimeout1"),1000);
+// setTimeout(()=>{console.log("this is settimeout2")},500);
+// setTimeout(()=>console.log("this is settimeout3"),0);
+// //s3,s2,s1
+
+
+
+// //ex7:
+
+// fs.readFile(__filename,()=>{
+//     console.log("This is file1");
+// });
+// process.nextTick(()=>console.log("This is nexttick1"));
+// Promise.resolve().then(()=>console.log("This is promise1"));
+// //n1,p1,f1
+
+
+
+// // //ex7:
+
+// setTimeout(()=>console.log("this is settimeout1"),0);
+// fs.readFile(__filename,()=>{
+//     console.log("This is file1");
+// });
+// //t1,f1(order can't be guaranteed may be f1,t1)because of 0.1ms delay
+
+
+// // //ex8:
+
+// fs.readFile(__filename,()=>{
+//     console.log("This is file1");
+// });
+// process.nextTick(()=>console.log("nexttick1"));
+// Promise.resolve().then(()=>console.log("promise 1"));
+// setTimeout(()=>console.log("this is settimeout1"),0);
+// // To avoid the time issue as above ex7 use for loop
+// for(let i=0;i<2000000000;i++){}
+// //for first since sync,n1,p1,t1,f1
+
+
+// //ex9:i/o polling
+// //check queue: setimmediate()
+
+// fs.readFile(__filename,()=>{
+//     console.log("This is file1");
+// });
+// process.nextTick(()=>console.log("nexttick1"));
+// Promise.resolve().then(()=>console.log("promise 1"));
+// setTimeout(()=>console.log("this is settimeout1"),0);
+// setImmediate(()=>console.log("this is setimmediate1"));
+// for(let i=0;i<2000000000;i++){}
+// //n1,p1,t1,i1,f1
+// //i1 comes before f1 although lower priority since 
+// //i/o events are polled and callback functions are added to the i/o queue only after the i/o is complete
+
+
+
+// //ex10:
+// //check queue: setimmediate()
+// console.clear();
+// fs.readFile(__filename,()=>{
+//     console.log("This is file1");
+//     setImmediate(()=>console.log("this is setimmediate1"));
+// });
+// process.nextTick(()=>console.log("nexttick1"));
+// Promise.resolve().then(()=>console.log("promise 1"));
+// setTimeout(()=>console.log("this is settimeout1"),0);
+// for(let i=0;i<2000000000;i++){}
+// //n1,p1,t1,f1,i1
+
+
+//ex11:
+// //check queue: setimmediate()
+// console.clear();
+// fs.readFile(__filename,()=>{
+//     console.log("This is file1");
+//     setImmediate(()=>console.log("this is setimmediate1"));
+//     process.nextTick(()=>console.log("nexttick2"));
+//     Promise.resolve().then(()=>console.log("promise2"));
+// });
+// process.nextTick(()=>console.log("nexttick1"));
+// Promise.resolve().then(()=>console.log("promise 1"));
+// setTimeout(()=>console.log("this is settimeout1"),0);
+// for(let i=0;i<2000000000;i++){}
+// //n1,p1,t1,f1,n2,p2,i1
+
+
+//ex12:
+//close queue readstream.close()
+console.clear();
+const readablestream3=fs.createReadStream(__filename);
+readablestream3.close();
+readablestream3.on("close",()=>{
+    console.log("readstream close event callback");
 });
-
-server.listen(3000,()=>{
-    console.log("Listening to 3000");
-})
-
-
-
+setImmediate(()=>console.log("this is setimmediate1"));
+setTimeout(()=>console.log("this is settimeout1"),0);
+Promise.resolve().then(()=>console.log("promise 1"));
+process.nextTick(()=>console.log("nexttick1"));
+//n1,p1,t1,i1,c1
 
 
-
-
-
-
-
-
-
-
-
-
+//npm-worls largest software library
+//npm -v
+//npm install package_name
+//upper-case-name of package,.upperCase method in package only that will be imported 
+const uppercase=require("upper-case").upperCase; 
+console.log(uppercase("Sam"));
 
 
 

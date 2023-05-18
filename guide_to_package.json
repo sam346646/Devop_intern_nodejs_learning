@@ -1,0 +1,7 @@
+{
+    "name":"greet-sam",
+    "version":"1.0.0",
+    "description":"It is a greeting package",
+    "keywords":["sam","greet"],
+    "main":"index.js"
+}

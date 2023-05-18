@@ -1,0 +1,1 @@
+To avoid the time issue as above ex7 use for loop
