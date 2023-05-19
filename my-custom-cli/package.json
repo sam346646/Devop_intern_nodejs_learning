@@ -9,7 +9,8 @@
   "bin": {
     "sam-pokedex": "index.js",
     "sam-pokemon-api": "fetch_pokemon_api.js",
-    "sam-pokemon-charmander-api": "fetch_pokemon_charmander_api.js"
+    "sam-pokemon-charmander-api": "fetch_pokemon_charmander_api.js",
+    "sam-pokemon-interactive-api": "fetch_pokemon_api_interactive.js"
   },
   "keywords": [],
   "author": "",

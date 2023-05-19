@@ -14,3 +14,4 @@ const printFiveMoves=async (pokemonName)=>{
 printFiveMoves(argv.pokemon);
 
 //fetch-pokemon-api --pokemon=charmander  (or mew)
+
